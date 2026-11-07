@@ -54,6 +54,6 @@ jobs:
         run: |
           mvn -B verify \
             org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            "-Dsonar.projectKey=azan-org_journalapp" \
+            "-Dsonar.projectKey=com.azan:journalApp" \
             "-Dsonar.organization=azan-org" \
             "-Dsonar.host.url=https://sonarcloud.io"
