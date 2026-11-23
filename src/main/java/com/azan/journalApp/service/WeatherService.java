@@ -4,6 +4,7 @@ import com.azan.journalApp.api.response.WeatherResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +22,30 @@ public class WeatherService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private RedisService redisService;
+
+    @Autowired
+    private WeatherService weatherService;
+
 
     public WeatherResponse getWeather(String city) {
         try {
-            String finalAPI = API.replace("CITY", city).replace("API_KEY", apiKey != null ? apiKey : "");
-            ResponseEntity<WeatherResponse> response = restTemplate.exchange(
-                    finalAPI,
-                    HttpMethod.GET,
-                    HttpEntity.EMPTY,
-                    WeatherResponse.class
-            );
-            return response.getBody();
+            WeatherResponse weatherResponse = redisService.get(city, WeatherResponse.class);
+            WeatherResponse body;
+            if (weatherResponse == null) {
+                return weatherResponse;
+            } else {
+                String finalAPI = API.replace("CITY", city).replace("API_KEY", apiKey != null ? apiKey : "");
+                ResponseEntity<WeatherResponse> response = restTemplate.exchange(
+                        finalAPI, HttpMethod.GET, HttpEntity.EMPTY, WeatherResponse.class
+                );
+                body = response.getBody();
+                if (body != null) {
+                    redisService.set("weather_of_" + city, body, 300l);
+                }
+            }
+            return body;
         } catch (Exception e) {
             log.error("Failed to fetch weather for city '{}': {}", city, e.getMessage());
             return null;
