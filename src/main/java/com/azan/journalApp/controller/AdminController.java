@@ -1,6 +1,5 @@
 package com.azan.journalApp.controller;
 
-
 import com.azan.journalApp.entity.User;
 import com.azan.journalApp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
